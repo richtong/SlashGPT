@@ -2,7 +2,9 @@ import json
 import os
 import platform
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
+from pathlib import Path
+import yaml
 
 try:
     from gtts import gTTS, lang
@@ -18,7 +20,14 @@ from slashgpt.chat_app import ChatApplication
 from slashgpt.chat_config_with_manifests import ChatConfigWithManifests
 from slashgpt.function.jupyter_runtime import PythonRuntime
 from slashgpt.utils.help import LONG_HELP, ONELINE_HELP
-from slashgpt.utils.print import print_bot, print_debug, print_error, print_function, print_info, print_warning
+from slashgpt.utils.print import (
+    print_bot,
+    print_debug,
+    print_error,
+    print_function,
+    print_info,
+    print_warning,
+)
 from slashgpt.utils.utils import InputStyle
 
 if platform.system() == "Darwin":
@@ -50,7 +59,13 @@ class ChatSlashConfig(ChatConfigWithManifests):
     A subclass of ChatConfigManifest, which maintains the audio flag.
     """
 
-    def __init__(self, base_path: str, path_manifests: str, llm_models: Optional[dict] = None, llm_engine_configs: Optional[dict] = None):
+    def __init__(
+        self,
+        base_path: str,
+        path_manifests: str,
+        llm_models: Optional[dict] = None,
+        llm_engine_configs: Optional[dict] = None,
+    ):
         """
         Args:
 
@@ -59,7 +74,9 @@ class ChatSlashConfig(ChatConfigWithManifests):
             llm_models (dict, optional): collection of custom LLM model definitions
             llm_engine_configs (dict, optional): collection of custom LLM engine definitions
         """
-        super().__init__(base_path, path_manifests, llm_models, llm_engine_configs)
+        super().__init__(
+            base_path, path_manifests, llm_models, llm_engine_configs
+        )
         self.audio: Optional[str] = None
         """Flag indicating if the audio mode is on or not"""
 
@@ -67,7 +84,10 @@ class ChatSlashConfig(ChatConfigWithManifests):
         return sorted(self.manifests.keys())
 
     def help_list(self):
-        return (f"/{(key+'         ')[:12]} {self.manifests.get(key).get('title')}" for key in self.__get_manifests_keys())
+        return (
+            f"/{(key+'         ')[:12]} {self.manifests.get(key).get('title')}"
+            for key in self.__get_manifests_keys()
+        )
 
 
 """
@@ -76,10 +96,16 @@ Main is a singleton, which process the input from the user and manage chat sessi
 
 
 class SlashGPT:
-    def __init__(self, config: ChatSlashConfig, manifests_manager: dict, agent_name: str):
+    def __init__(
+        self, config: ChatSlashConfig, manifests_manager: dict, agent_name: str
+    ):
         self.manifests_manager = manifests_manager
         self.exit = False
-        self.app = ChatApplication(config, self._callback, runtime=PythonRuntime(config.base_path + "/output/notebooks"))
+        self.app = ChatApplication(
+            config,
+            self._callback,
+            runtime=PythonRuntime(config.base_path + "/output/notebooks"),
+        )
         self.app.switch_session(agent_name)
 
     def parse_question(self, question: str):
@@ -109,7 +135,9 @@ class SlashGPT:
             if sub_manifest_data:
                 sample = sub_manifest_data.get("sample")
                 if sample:
-                    print(f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m{sample}")
+                    print(
+                        f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m{sample}"
+                    )
                     return sample
             else:
                 agents = self.app.session.manifest.get("agents")
@@ -118,13 +146,20 @@ class SlashGPT:
                 else:
                     print_error(f"Error: No manifest named '{sub_key}'")
         elif commands[0] == "samples":
-            samples = list(map(lambda x: f"/{x}: {self.app.session.manifest.get(x)}", self.app.session.manifest.samples()))
+            samples = list(
+                map(
+                    lambda x: f"/{x}: {self.app.session.manifest.get(x)}",
+                    self.app.session.manifest.samples(),
+                )
+            )
             print("\n".join(samples))
             return None
         elif key[:6] == "sample":
             sample = self.app.session.manifest.get(key)
             if sample:
-                print(f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m{sample}")
+                print(
+                    f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m{sample}"
+                )
                 return sample
             print_error(f"Error: No {key} in the manifest file")
         return None
@@ -145,7 +180,9 @@ class SlashGPT:
             if len(commands) == 2:
                 manifest_data = self.app.config.manifests.get(commands[1])
                 if manifest_data:
-                    print(json.dumps(manifest_data, indent=2, ensure_ascii=False))
+                    print(
+                        json.dumps(manifest_data, indent=2, ensure_ascii=False)
+                    )
         elif key == "bye":
             self.app.runtime.stop()
             self.exit = True
@@ -177,8 +214,20 @@ class SlashGPT:
                 print_debug(self.app.session.functions)
         elif commands[0] == "history":
             if len(commands) == 1:
-                print(json.dumps(self.app.session.history.messages(), ensure_ascii=False, indent=2))
-                print(json.dumps(self.app.session.history.preset_messages(), ensure_ascii=False, indent=2))
+                print(
+                    json.dumps(
+                        self.app.session.history.messages(),
+                        ensure_ascii=False,
+                        indent=2,
+                    )
+                )
+                print(
+                    json.dumps(
+                        self.app.session.history.preset_messages(),
+                        ensure_ascii=False,
+                        indent=2,
+                    )
+                )
             elif len(commands) > 1 and commands[1] == "pop":
                 self.app.session.history.pop_message()
         elif key == "functions":
@@ -187,12 +236,20 @@ class SlashGPT:
         elif key == "manifest":
             print(json.dumps(self.app.session.manifest.manifest(), indent=2))
         elif commands[0] == "llm" or commands[0] == "llms":
-            if len(commands) > 1 and self.app.config.llm_models and self.app.config.llm_models.get(commands[1]):
-                self.llm_model = self.app.config.get_llm_model_from_key(commands[1])
+            if (
+                len(commands) > 1
+                and self.app.config.llm_models
+                and self.app.config.llm_models.get(commands[1])
+            ):
+                self.llm_model = self.app.config.get_llm_model_from_key(
+                    commands[1]
+                )
                 self.app.session.set_llm_model(self.llm_model)
             else:
                 if self.app.config.llm_models is None:
-                    raise RuntimeError("self.app.config.llm_models must be set")
+                    raise RuntimeError(
+                        "self.app.config.llm_models must be set"
+                    )
                 print("/llm: " + ",".join(self.app.config.llm_models.keys()))
         elif key == "current_llm":
             print(self.app.session.llm_model.name())
@@ -200,28 +257,99 @@ class SlashGPT:
             self.app.switch_session(self.app.session.agent_name, intro=False)
         elif commands[0] == "autotest":
             self.auto_test(commands)
+        elif commands[0] == "exec":
+            self.exec(commands)
         elif commands[0] == "switch":
             if len(commands) > 1 and self.manifests_manager.get(commands[1]):
                 self.switch_manifests(commands[1])
             else:
-                print("/switch {manifest}: " + ", ".join(self.manifests_manager.keys()))
+                print(
+                    "/switch {manifest}: "
+                    + ", ".join(self.manifests_manager.keys())
+                )
         elif commands[0] == "import":
             self.import_data(commands)
         elif commands[0] == "reload":
             self.app.config.reload()
         elif self.app.config.has_manifest(commands[0]):
-            messages = self.app.session.history.nonpreset_messages()  # for "-chain" option
+            messages = (
+                self.app.session.history.nonpreset_messages()
+            )  # for "-chain" option
             self.app.switch_session(commands[0])
             if len(commands) > 1 and commands[1] == "-chain":
                 if self.app.config.verbose:
                     print_debug(f"Chaining {len(messages)} messages")
                 for m in messages:
                     self.app.session.history.append_message(
-                        {"role": m.get("role"), "content:": m.get("content"), "name": m.get("name"), "preset": False}
+                        {
+                            "role": m.get("role"),
+                            "content:": m.get("content"),
+                            "name": m.get("name"),
+                            "preset": False,
+                        }
                     )
-
         else:
             print_error(f"Invalid slash command: {key}")
+
+    def load_graph(
+        self, dir_name: str, file_name: Path
+    ) -> Tuple[Path, dict | None]:
+        """Loads a execution graph from a file"""
+        # https://docs.python.org/3/library/pathlib.html
+        file_path = (
+            Path(self.app.config.base_path) / dir_name / f"{file_name}.json"
+        )
+        # https://gist.github.com/tomschr/86a8c6f52b81e35ac4723fef8435ec43
+        if not file_path.is_file():
+            print_warning(f"No {dir_name}/{file_name}")
+            graph = None
+        if file_path.suffix in [".json", ".json5"]:
+            graph = json.loads(file_path.read_text())
+        else:
+            graph = yaml.safe_load(file_path.read_text())
+        breakpoint()
+        return file_path, graph
+
+    def exec(self, commands: List[str]):
+        """Loads an execution tree from a file and executes it"""
+        file_name = Path(commands[1] if len(commands) > 1 else "default")
+        file_path, graph = self.load_graph("exec", file_name)
+        if not graph:
+            print_warning(f"No execution graph file named at {graph=}")
+            return
+        if not isinstance(graph, list):
+            print_warning(f"Not a list at {graph=}")
+            return
+        self.switch_manifests(graph.get("manifests") or "main")
+        self.exec_graph(graph)
+
+    def exec_graph(self, graph: dict):
+        for node in graph:
+            # we expect the graph to full of dicts
+            # only the first is valid
+            breakpoint()
+            self.switch_manifests(node.get("manifests") or "main")
+            match node.keys()[0]:
+                case "agent":
+                    for message in node.get("message"):
+                        self.talk(**message)
+                    for m in graph[node].get("messages"):
+                        self.talk(**m)
+                case "serial":
+                    # TODO: feed the histories sequentially to each
+                    for s in graph[node]:
+                        self.exec_graph(s)
+                case "scatter":
+                    # TODO: feed the same history to each node
+                    for s in graph[node]:
+                        self.exec_graph(s)
+                case "switch":
+                    self.exec_graph(graph[node])
+                    for c in graph[node].get("case"):
+                        c["value"]
+                        c[""]
+                case _:
+                    print_error(f"Invalid operator: {node} in {graph}")
 
     def auto_test(self, commands: List[str]):
         file_name = commands[1] if len(commands) > 1 else "default"
@@ -260,18 +388,24 @@ class SlashGPT:
 
     def switch_manifests(self, key: str):
         m = self.manifests_manager[key]
-        self.app.config.switch_manifests(self.app.config.base_path + "/" + m["manifests_dir"])
+        self.app.config.switch_manifests(
+            self.app.config.base_path + "/" + m["manifests_dir"]
+        )
         self.app.switch_session(m["default_agent_name"])
 
     def test(self, agent=None, message=None, messages=None):
         if agent is not None:
             self.app.switch_session(agent)
         if message:
-            print(f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m{message}")
+            print(
+                f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m{message}"
+            )
             self.talk(message)
         if messages:
             for m in messages:
-                print(f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m{m}")
+                print(
+                    f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m{m}"
+                )
                 self.talk(m)
 
     def _callback(self, callback_type, data):
@@ -298,7 +432,11 @@ class SlashGPT:
 
     def input_and_talk(self):
         try:
-            self.talk(input(f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m").strip())
+            self.talk(
+                input(
+                    f"\033[95m\033[1m{self.app.session.username()}: \033[95m\033[0m"
+                ).strip()
+            )
         except KeyboardInterrupt:
             self.exit = True
             print("bye")
