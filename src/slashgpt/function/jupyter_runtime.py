@@ -15,7 +15,9 @@ try:
 
     isLoadedRuntime = True
 except ImportError:
-    print("no jupyter_runtime related module. pip install codeboxapi IPython matplotlib numpy pydantic==1.10")
+    print(
+        "no jupyter_runtime related module. pip install codeboxapi IPython matplotlib numpy pydantic==1.10"
+    )
     isLoadedRuntime = False
 
 
@@ -39,20 +41,33 @@ class PythonRuntime:
 
     def create_notebook(self, module: str):
         if not isLoadedRuntime:
-            return ({"result": "Not created a notebook", "notebook_name": "None"}, None)
+            return (
+                {"result": "Not created a notebook", "notebook_name": "None"},
+                None,
+            )
 
         # Create a new notebook
         counter = 0
         notebook_name = "notebook"
-        self.file_path = os.path.join(self.folder_path, f"{notebook_name}.ipynb")
+        self.file_path = os.path.join(
+            self.folder_path, f"{notebook_name}.ipynb"
+        )
 
         while os.path.exists(self.file_path):
             counter += 1
             notebook_name = f"notebook{counter}"
-            self.file_path = os.path.join(self.folder_path, f"{notebook_name}.ipynb")
+            self.file_path = os.path.join(
+                self.folder_path, f"{notebook_name}.ipynb"
+            )
 
         self.notebook = {
-            "cells": [{"cell_type": "markdown", "metadata": {}, "source": [f"# {module}"]}],
+            "cells": [
+                {
+                    "cell_type": "markdown",
+                    "metadata": {},
+                    "source": [f"# {module}"],
+                }
+            ],
             "metadata": {},
             "nbformat": 4,
             "nbformat_minor": 5,
@@ -67,8 +82,11 @@ class PythonRuntime:
             self.codebox = cb.CodeBox()
             self.codebox.start()
         else:
-            self.ipython = IPython.InteractiveShell()
-        return ({"result": "created a notebook", "notebook_name": notebook_name}, None)
+            self.ipythonse = IPython.InteractiveShell()
+        return (
+            {"result": "created a notebook", "notebook_name": notebook_name},
+            None,
+        )
 
     def stop(self):
         if self.codebox:
@@ -106,7 +124,13 @@ class PythonRuntime:
                 )
                 result = str(output)
             elif output.type == "error":
-                outputs.append({"output_type": "stream", "name": "stderr", "text": str(output)})
+                outputs.append(
+                    {
+                        "output_type": "stream",
+                        "name": "stderr",
+                        "text": str(output),
+                    }
+                )
                 result = str(output)
             elif output.type == "image/png":
                 outputs.append(
@@ -131,9 +155,13 @@ class PythonRuntime:
             stdout = io.StringIO()
             stderr = io.StringIO()
 
-            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            with contextlib.redirect_stdout(
+                stdout
+            ), contextlib.redirect_stderr(stderr):
                 if self.ipython:
-                    exec_result = self.ipython.run_cell("".join(code) if isinstance(code, list) else code)
+                    exec_result = self.ipython.run_cell(
+                        "".join(code) if isinstance(code, list) else code
+                    )
 
             # Handle stdout
             if stdout.getvalue():

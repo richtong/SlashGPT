@@ -359,7 +359,6 @@ class SlashGPT:
         with open(file_path, "r") as f:
             scripts = json.load(f)
             self.switch_manifests(scripts.get("manifests") or "main")
-            breakpoint()
             for message in scripts.get("messages"):
                 self.test(**message)
         self.app.config.verbose = False

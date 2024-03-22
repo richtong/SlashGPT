@@ -1,6 +1,8 @@
 太郎くんと花子さんは、ある商品の値段を当てるゲームをしました。予想した値段が近い方が勝ちです。花子さんが、先手で２万円と予想し、それを聞いた太郎君は１万８千円と予想しました。太郎君の戦略的な誤りを指摘してください。
 
-Tom and Kathy played a game of guessing the price of a certain product. The winner was the one who guessed the price closest. Kathy guessed $200 first, and Tom guessed $180. Point out Tom's strategic error.
+Tom and Kathy played a game of guessing the price of a certain product. The
+winner was the one who guessed the price closest. Kathy guessed $200 first, and
+Tom guessed $180. Point out Tom's strategic error.
 
 - GPT4: **$199**
 - Bard: Ignore Kathy's number
@@ -16,14 +18,14 @@ Tom and Kathy played a game of guessing the price of a certain product. The winn
 5人の子供が同時にかけっこをしました。
 AはBに負けましたが、Cには勝ちました
 DはEには勝ちましたが、Cには負けました
-五人の順位を答えてください。 
+五人の順位を答えてください。
 
-Five children had a running competition together. 
+Five children had a running competition together.
 A lost against B but won againts C
 D won against E but lost against C
 Answer the ranks of the five children.
 
-- GPT4: **B, A, C, D, E** 
+- GPT4: **B, A, C, D, E**
 - Bard: **B, A, C, D, E**
 - Claude: C, B, D, A, E
 - Pi AI: **B, A, C, D, E**

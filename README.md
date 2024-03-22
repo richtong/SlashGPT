@@ -3,7 +3,7 @@
 SlashGPT is a playground for developers to make quick prototypes of LLM agents
 (or apps with Natural Language UI).
 
-Here are the design goals:
+Here are the design goals for SlashGPT as explained in [Manifest](docs/manifest.md):
 
 1. Extremely easy to create a new LLM agent. You just need to add a new
    manifest file (in Json or YAML).
