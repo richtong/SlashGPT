@@ -1,12 +1,16 @@
 # Testing execution graph parser with three primitives
 # run serially, scatter, and while loop
 # allows arbitrary nesting
+# note /sample currency currenlty runs too long so don't use as example
 version: 0.1
 exec:
+  - agent: dispatcher
+    messages:
+      - /sample
   - serial :
     - agent: dispatcher
       messages:
-        - /sample currency
+        - /sample_stock
     - agent: cal
       messages:
         - /sample

@@ -307,11 +307,10 @@ class SlashGPT:
             graph = json.loads(file_path.read_text())
         else:
             graph = yaml.safe_load(file_path.read_text())
-        breakpoint()
         return file_path, graph
 
     def exec(self, commands: List[str]):
-        """Loads an execution tree from a file and executes it"""
+        """Loads an execution tree from a file and executes it."""
         file_name = Path(commands[1] if len(commands) > 1 else "default")
         file_path, graph = self.load_graph("exec", file_name)
         if not graph:
@@ -325,30 +324,34 @@ class SlashGPT:
             self.exec_graph(e)
 
     def exec_graph(self, graph: dict):
+        """Executes an execution tree recursively."""
+        breakpoint()
         for node in graph:
             # we expect the graph to full of dicts
             # only the first is valid
-            breakpoint()
             self.switch_manifests(node.get("manifests") or "main")
-            if "agent" in node:
-                for message in node.get("message"):
-                    self.talk(**message)
-                for m in graph[node].get("messages"):
-                    self.talk(**m)
-            elif "serial" in node:
+            if agent := node.get("agent"):
+                self.app.switch_session(agent)
+                # agents can either have a single message
+                if message := node.get("message"):
+                    self.talk(message)
+                # or an array of messages
+                for m in node.get("messages"):
+                    self.talk(m)
+            elif serial := node.get("serial"):
                 # TODO: feed the histories sequentially to each
-                for n in node["serial"]:
-                    self.exec_graph(n)
-            elif "scatter" in node:
+                for serial_node in serial:
+                    self.exec_graph(serial_node)
+            elif scatter := node.get("scatter"):
                 # TODO: feed the same history to each node
-                for s in node["scatter"]:
-                    self.exec_graph(s)
-            elif "switch":
-                print_error(f"Invalid operator: {node}")
-            elif "if":
-                print_error(f"Invalid operator: {node}")
-            elif "while":
-                print_error(f"Invalid operator: {node}")
+                for scatter_node in scatter:
+                    self.exec_graph(scatter_node)
+            elif switch := node.get("switch"):
+                print_warning(f"Not implemented {switch}")
+            elif if_node := node.get("if"):
+                print_warning(f"Not implemented {if_node}")
+            elif while_node := node.get("while"):
+                print_warning(f"Not implemented {while_node}")
 
     def auto_test(self, commands: List[str]):
         file_name = commands[1] if len(commands) > 1 else "default"
@@ -360,6 +363,7 @@ class SlashGPT:
         with open(file_path, "r") as f:
             scripts = json.load(f)
             self.switch_manifests(scripts.get("manifests") or "main")
+            breakpoint()
             for message in scripts.get("messages"):
                 self.test(**message)
         self.app.config.verbose = False
