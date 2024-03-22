@@ -33,5 +33,5 @@ before_commit:
 
 .PHONY: docker
 docker:
-	docker build -t sld -f Dockerfile.dev .
-	docker run -it -v "$(PWD):/SlashGPT/SlashGPT" sld bash
+	docker build --build-arg BUILD=full -t slashgpt .
+	docker run -it -v "$(PWD):/SlashGPT/SlashGPT" slashgpt python -m pdb SlashGPT.py

@@ -68,16 +68,10 @@ This is different that user execution, here we link the files in the repo
 directly into the container so you can run and debug and update code into the
 repo directly.
 
-1. Build docker image `docker build -t slashgpt -f Dockerfile.dev .`
+1. Build docker image `docker build -t slashgpt
 2. Run SlashGPT on Docker `docker run -it slashgpt -v $(pwd):/SlashGPT/SlashGPT ./SlashGPT.py`
-
-There is also a helper function that work for rapid development
-
-```sh
-make docker
-# when done you can just commit the changes
-git commit -a
-```
+3. There is a Makefile helper function that does this for you `make docker`
+   will drop you into an python debug session.
 
 ## Outputs
 
@@ -182,12 +176,18 @@ Here is an example (home).
 
 ```json
   "actions": {
-    "fill_bath": { "type": "message_template", "message":"Success. I started filling the bath tab." },
-    "set_temperature": { "type": "message_template", "message":"Success. I set the temperature to {temperature} for {location}" },
-    "start_sprinkler": { "type": "message_template", "message":"Success. I started the sprinkler for {location}" },
-    "take_picture": { "type": "message_template", "message":"Success. I took a picture of {location}" },
-    "play_music": { "type": "message_template", "message":"Success. I started playing {music} in {location}" },
-    "control_light": { "type": "message_template", "message":"Success. The light switch of {location} is now {switch}." }
+    "fill_bath": { "type": "message_template",
+        "message":"Success. I started filling the bath tab." },
+    "set_temperature": { "type": "message_template",
+        "message":"Success. I set temperature to {temperature} for {location}" },
+    "start_sprinkler": { "type": "message_template",
+        "message":"Success. I started the sprinkler for {location}" },
+    "take_picture": { "type": "message_template",
+        "message":"Success. I took a picture of {location}" },
+    "play_music": { "type": "message_template",
+        "message":"Success. I started playing {music} in {location}" },
+    "control_light": { "type": "message_template",
+        "message":"Success. The light switch of {location} is now {switch}." }
   }
 ```
 

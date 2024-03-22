@@ -297,7 +297,7 @@ class SlashGPT:
         """Loads a execution graph from a file"""
         # https://docs.python.org/3/library/pathlib.html
         file_path = (
-            Path(self.app.config.base_path) / dir_name / f"{file_name}.json"
+            Path(self.app.config.base_path) / dir_name / f"{file_name}.yaml"
         )
         # https://gist.github.com/tomschr/86a8c6f52b81e35ac4723fef8435ec43
         if not file_path.is_file():
@@ -317,11 +317,12 @@ class SlashGPT:
         if not graph:
             print_warning(f"No execution graph file named at {graph=}")
             return
-        if not isinstance(graph, list):
-            print_warning(f"Not a list at {graph=}")
+        if not isinstance(graph, dict):
+            print_warning(f"Not a dict at {graph=}")
             return
         self.switch_manifests(graph.get("manifests") or "main")
-        self.exec_graph(graph)
+        if e := graph.get("exec"):
+            self.exec_graph(e)
 
     def exec_graph(self, graph: dict):
         for node in graph:
@@ -329,27 +330,25 @@ class SlashGPT:
             # only the first is valid
             breakpoint()
             self.switch_manifests(node.get("manifests") or "main")
-            match node.keys()[0]:
-                case "agent":
-                    for message in node.get("message"):
-                        self.talk(**message)
-                    for m in graph[node].get("messages"):
-                        self.talk(**m)
-                case "serial":
-                    # TODO: feed the histories sequentially to each
-                    for s in graph[node]:
-                        self.exec_graph(s)
-                case "scatter":
-                    # TODO: feed the same history to each node
-                    for s in graph[node]:
-                        self.exec_graph(s)
-                case "switch":
-                    self.exec_graph(graph[node])
-                    for c in graph[node].get("case"):
-                        c["value"]
-                        c[""]
-                case _:
-                    print_error(f"Invalid operator: {node} in {graph}")
+            if "agent" in node:
+                for message in node.get("message"):
+                    self.talk(**message)
+                for m in graph[node].get("messages"):
+                    self.talk(**m)
+            elif "serial" in node:
+                # TODO: feed the histories sequentially to each
+                for n in node["serial"]:
+                    self.exec_graph(n)
+            elif "scatter" in node:
+                # TODO: feed the same history to each node
+                for s in node["scatter"]:
+                    self.exec_graph(s)
+            elif "switch":
+                print_error(f"Invalid operator: {node}")
+            elif "if":
+                print_error(f"Invalid operator: {node}")
+            elif "while":
+                print_error(f"Invalid operator: {node}")
 
     def auto_test(self, commands: List[str]):
         file_name = commands[1] if len(commands) > 1 else "default"

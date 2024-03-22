@@ -1,66 +1,68 @@
 # Testing execution graph parser with three primitives
 # run serially, scatter, and while loop
 # allows arbitrary nesting
-- serial :
-  - agent: dispatcher
-    messages:
-      - /sample currency
-  - agent: cal
-    messages:
-      - /sample
-- scatter :
-  - agent: code
-    message: /sample_stock
-  - agent: dispatcher
-    message: switch roles1
-- switch :
-  - expr : rand()
-  - case :
-    - value: <0.1
-      agent: business
+version: 0.1
+exec:
+  - serial :
+    - agent: dispatcher
       messages:
-         - /new
-         - /help
-         - /llm gpt3
-      break: true
-    - value: <0.9
-      agent: dispatcher
-      message: switch roles1
-    - default :
-      agent: dispatcher
-      message: switch roles1
-
-- while :
-    - agent: business
+        - /sample currency
+    - agent: cal
       messages:
-         - /new
-         - /help
-         - /llm gpt3
-    - until : a<b
-
-- serial :
-  - agent: dispatcher
-    messages:
-      - /sample currencyhttps://meet.google.com/ogn-basy-oui
+        - /sample
   - scatter :
     - agent: code
-      message: /sample_stcok
-    - switch :
-      - expr : rand()
-      - case :
-      - value: 0.7
+      message: /sample_stock
+    - agent: dispatcher
+      message: switch roles1
+  - switch :
+    - expr : rand()
+    - case :
+      - value: <0.1
         agent: business
         messages:
            - /new
            - /help
            - /llm gpt3
+        break: true
+      - value: <0.9
+        agent: dispatcher
+        message: switch roles1
       - default :
+        agent: dispatcher
+        message: switch roles1
+
+  - while :
+      - agent: business
+        messages:
+           - /new
+           - /help
+           - /llm gpt3
+      - until : a<b
+
+  - serial :
     - agent: dispatcher
-      message: switch roles1
-    - while :
-        - agent: business
+      messages:
+        - /sample currencyhttps://meet.google.com/ogn-basy-oui
+    - scatter :
+      - agent: code
+        message: /sample_stcok
+      - switch :
+        - expr : rand()
+        - case :
+        - value: 0.7
+          agent: business
           messages:
              - /new
              - /help
              - /llm gpt3
-        - condition : a<b
+        - default :
+      - agent: dispatcher
+        message: switch roles1
+      - while :
+          - agent: business
+            messages:
+               - /new
+               - /help
+               - /llm gpt3
+          - condition : a<b
