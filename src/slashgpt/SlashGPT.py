@@ -319,39 +319,35 @@ class SlashGPT:
         if not isinstance(graph, dict):
             print_warning(f"Not a dict at {graph=}")
             return
-        self.switch_manifests(graph.get("manifests") or "main")
-        if e := graph.get("exec"):
-            self.exec_graph(e)
+        self.exec_graph(graph)
 
-    def exec_graph(self, graph: dict):
+    def exec_graph(self, node: dict):
         """Executes an execution tree recursively."""
-        breakpoint()
-        for node in graph:
-            # we expect the graph to full of dicts
-            # only the first is valid
-            self.switch_manifests(node.get("manifests") or "main")
-            if agent := node.get("agent"):
-                self.app.switch_session(agent)
-                # agents can either have a single message
-                if message := node.get("message"):
-                    self.talk(message)
-                # or an array of messages
-                for m in node.get("messages"):
-                    self.talk(m)
-            elif serial := node.get("serial"):
-                # TODO: feed the histories sequentially to each
-                for serial_node in serial:
-                    self.exec_graph(serial_node)
-            elif scatter := node.get("scatter"):
-                # TODO: feed the same history to each node
-                for scatter_node in scatter:
-                    self.exec_graph(scatter_node)
-            elif switch := node.get("switch"):
-                print_warning(f"Not implemented {switch}")
-            elif if_node := node.get("if"):
-                print_warning(f"Not implemented {if_node}")
-            elif while_node := node.get("while"):
-                print_warning(f"Not implemented {while_node}")
+        # we expect the graph to full of dicts
+        # only the first is valid
+        self.switch_manifests(node.get("manifests") or "main")
+        if agent := node.get("agent"):
+            self.app.switch_session(agent)
+            # agents can either have a single message
+            if message := node.get("message"):
+                self.talk(message)
+            # or an array of messages
+            for m in node.get("messages"):
+                self.talk(m)
+        elif serial := node.get("serial"):
+            # TODO: feed the histories sequentially to each
+            for serial_node in serial:
+                self.exec_graph(serial_node)
+        elif scatter := node.get("scatter"):
+            # TODO: feed the same history to each node
+            for scatter_node in scatter:
+                self.exec_graph(scatter_node)
+        elif switch := node.get("switch"):
+            print_warning(f"Not implemented {switch}")
+        elif if_node := node.get("if"):
+            print_warning(f"Not implemented {if_node}")
+        elif while_node := node.get("while"):
+            print_warning(f"Not implemented {while_node}")
 
     def auto_test(self, commands: List[str]):
         file_name = commands[1] if len(commands) > 1 else "default"

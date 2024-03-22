@@ -3,7 +3,7 @@
 # allows arbitrary nesting
 # note /sample currency currenlty runs too long so don't use as example
 version: 0.1
-exec:
+serial:
   - agent: dispatcher
     messages:
       - /sample
