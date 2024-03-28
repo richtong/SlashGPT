@@ -3,7 +3,9 @@
 SlashGPT is a playground for developers to make quick prototypes of LLM agents
 (or apps with Natural Language UI).
 
-Here are the design goals for SlashGPT as explained in [Manifest](docs/manifest.md):
+Here are the design goals for SlashGPT as explained in
+[Manifest](docs/manifest.md) and the [Architecture](docs/architecture.ipynb)
+allows:
 
 1. Extremely easy to create a new LLM agent. You just need to add a new
    manifest file (in Json or YAML).
@@ -252,7 +254,8 @@ Here is an example for "make_event" function (cal).
 ```
 
 The contents of calendar.ics file.
-```
+
+```ics
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//My Calendar//NONSELF v1.0//EN
@@ -267,6 +270,7 @@ END:VCALENDAR
 ```
 
 The definition of "make_event" function.
+
 ```json
 {
   "name": "make_event",

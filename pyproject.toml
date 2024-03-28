@@ -30,6 +30,7 @@ tiktoken = "^0.4.0"
 requests-toolbelt = "^1.0.0"
 pyyaml = "^6.0.1"
 chromadb = "^0.4.24"
+asyncio = "^3.4.3"
 
 [tool.poetry.dependencies.pyobjc]
 version = "^9.2"
